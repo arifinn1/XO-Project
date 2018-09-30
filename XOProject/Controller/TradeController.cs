@@ -23,6 +23,10 @@ namespace XOProject.Controller
             _portfolioRepository = portfolioRepository;
         }
 
+        public TradeController(ITradeRepository tradeRepository)
+        {
+            _tradeRepository = tradeRepository;
+        }
 
         [HttpGet("{portfolioid}")]
         public async Task<IActionResult> GetAllTradings([FromRoute]int portFolioid)
@@ -40,13 +44,50 @@ namespace XOProject.Controller
         /// <returns></returns>
 
         [HttpGet("Analysis/{symbol}")]
-        public async Task<IActionResult> GetAnalysis([FromRoute]string symbol)
+        public async Task<IActionResult> GetAnalysis([FromRoute]int portFolioid)
         {
+            var shares = _tradeRepository.Query().Where(x => x.Symbol.Equals(portFolioid));
+            var q_sell = shares.Where(i => i.Action.Equals("SELL"));
+            var q_buy = shares.Where(i => i.Action.Equals("BUY"));
+
+            TradeAnalysis sell = new TradeAnalysis();
+            if (q_sell.Count() > 0)
+            {
+                sell.Sum = q_sell.Sum(i => i.NoOfShares);
+                sell.Average = q_sell.Average(i => i.NoOfShares);
+                sell.Maximum = q_sell.Max(i => i.NoOfShares);
+                sell.Minimum = q_sell.Min(i => i.NoOfShares);
+            }
+            sell.Action = "SELL";
+
+            TradeAnalysis buy = new TradeAnalysis();
+            if (q_buy.Count() > 0)
+            {
+                buy.Sum = q_buy.Sum(i => i.NoOfShares);
+                buy.Average = q_buy.Average(i => i.NoOfShares);
+                buy.Maximum = q_buy.Max(i => i.NoOfShares);
+                buy.Minimum = q_buy.Min(i => i.NoOfShares);
+            }
+            buy.Action = "BUY";
+
             var result = new List<TradeAnalysis>();
-            
+            result.Add(sell);
+            result.Add(buy);
+
             return Ok(result);
         }
 
+        [HttpPost]
+        public async Task<IActionResult> Post([FromBody]Trade value)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
 
+            await _tradeRepository.InsertAsync(value);
+
+            return Created($"Trade/{value.Id}", value);
+        }
     }
 }

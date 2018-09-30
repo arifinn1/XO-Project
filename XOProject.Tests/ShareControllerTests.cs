@@ -40,6 +40,23 @@ namespace XOProject.Tests
             Assert.NotNull(createdResult);
             Assert.AreEqual(201, createdResult.StatusCode);
         }
-        
+
+        [Test]
+        public async Task GetShareBySymbol()
+        {
+            var result = await _shareController.Get("REL");
+
+            // Assert
+            Assert.NotNull(result);
+        }
+
+        [Test]
+        public async Task GetShareLastestBySymbol()
+        {
+            var result = _shareController.GetLatestPrice("REL");
+
+            // Assert
+            Assert.NotNull(result);
+        }
     }
 }

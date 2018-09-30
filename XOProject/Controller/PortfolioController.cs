@@ -9,7 +9,7 @@ namespace XOProject.Controller
     {
         private IPortfolioRepository _portfolioRepository { get; set; }
 
-        public PortfolioController(IShareRepository shareRepository, ITradeRepository tradeRepository, IPortfolioRepository portfolioRepository)
+        public PortfolioController(IPortfolioRepository portfolioRepository)
         {
             _portfolioRepository = portfolioRepository;
         }
